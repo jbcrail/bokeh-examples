@@ -68,7 +68,6 @@ def cache(args):
         c = conn.cursor()
         c.execute("CREATE TABLE IF NOT EXISTS weather (airport text, date text, key text, value numeric, UNIQUE(airport, date, key) ON CONFLICT IGNORE)")
         for date in get_valid_date_range(args.year, args.month, args.day):
-            continue
             if not has_data(c, args.airport, date):
                 print "Retrieving weather for {0} on {1}".format(args.airport, date)
                 statistics = get_temperatures(args.airport, date)
