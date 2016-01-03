@@ -27,14 +27,14 @@ def get_temperatures(airport, date):
         weather_data = [span.text for span in row.find_all('span')]
         if weather_data and "Max Temperature" in weather_data[0]:
             data = [re.sub(r'[^\-0-9]+', '', data) for data in weather_data if data]
-            temperatures['actual-max-temp'] = int(data[2])
-            temperatures['average-max-temp'] = int(data[5])
-            temperatures['record-max-temp'] = int(data[8])
+            temperatures['actual_max_temp'] = int(data[2])
+            temperatures['average_max_temp'] = int(data[5])
+            temperatures['record_max_temp'] = int(data[8])
         elif weather_data and "Min Temperature" in weather_data[0]:
             data = [re.sub(r'[^\-0-9]+', '', data) for data in weather_data if data]
-            temperatures['actual-min-temp'] = int(data[2])
-            temperatures['average-min-temp'] = int(data[5])
-            temperatures['record-min-temp'] = int(data[8])
+            temperatures['actual_min_temp'] = int(data[2])
+            temperatures['average_min_temp'] = int(data[5])
+            temperatures['record_min_temp'] = int(data[8])
     return temperatures
 
 def get_valid_date_range(year, month, day):
@@ -83,12 +83,12 @@ def export(args):
         writer = csv.writer(sys.stdout)
         sql = '''SELECT
             airport, date,
-            MAX(CASE WHEN key='actual-max-temp'  THEN value END) actual_max_temp,
-            MAX(CASE WHEN key='average-max-temp' THEN value END) average_max_temp,
-            MAX(CASE WHEN key='record-max-temp'  THEN value END) record_max_temp,
-            MAX(CASE WHEN key='actual-min-temp'  THEN value END) actual_min_temp,
-            MAX(CASE WHEN key='average-min-temp' THEN value END) average_min_temp,
-            MAX(CASE WHEN key='record-min-temp'  THEN value END) record_min_temp
+            MAX(CASE WHEN key='actual_max_temp'  THEN value END) actual_max_temp,
+            MAX(CASE WHEN key='average_max_temp' THEN value END) average_max_temp,
+            MAX(CASE WHEN key='record_max_temp'  THEN value END) record_max_temp,
+            MAX(CASE WHEN key='actual_min_temp'  THEN value END) actual_min_temp,
+            MAX(CASE WHEN key='average_min_temp' THEN value END) average_min_temp,
+            MAX(CASE WHEN key='record_min_temp'  THEN value END) record_min_temp
             FROM weather
             GROUP BY airport, date
         '''
