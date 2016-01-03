@@ -6,34 +6,23 @@ from bokeh.models import ColumnDataSource, DataRange1d, Range1d, VBox, HBox, Sel
 from bokeh.plotting import Figure
 from scipy.signal import savgol_filter
 
+STATISTICS = ['record_min_temp', 'actual_min_temp', 'average_min_temp', 'average_max_temp', 'actual_max_temp', 'record_max_temp']
 
 # Filter for smoothing data originates from http://stackoverflow.com/questions/20618804/how-to-smooth-a-curve-in-the-right-way
-def get_dataset(df, name, distribution):
-    temps = ['record-min-temp', 'actual-min-temp', 'average-min-temp', 'average-max-temp', 'actual-max-temp', 'record-max-temp']
-    df = df[df.airport == name]
-    df['date'] = pd.to_datetime(df['date'])
-    df = pd.pivot_table(df, index='date', columns=['key'])
-    df.columns = [col[1] for col in df.columns.values]
-    df = df[temps]
-    df.reset_index(inplace=True)
-    df.sort_index()
+def get_dataset(src, name, distribution):
+    df = src[src.airport == name].copy()
+    del df['airport']
+    df['date'] = pd.to_datetime(df.date)
     df['left'] = df.date - pd.DateOffset(days=0.5)
     df['right'] = df.date + pd.DateOffset(days=0.5)
+    df = df.set_index(['date'])
+    df.sort_index(inplace=True)
     if distribution == 'Smooth':
         window, order = 51, 3
-        for key in temps:
+        for key in STATISTICS:
             df[key] = savgol_filter(df[key], window, order)
 
-    return ColumnDataSource(data=dict(
-        record_min_temp=df['record-min-temp'],
-        record_max_temp=df['record-max-temp'],
-        actual_min_temp=df['actual-min-temp'],
-        actual_max_temp=df['actual-max-temp'],
-        average_min_temp=df['average-min-temp'],
-        average_max_temp=df['average-max-temp'],
-        left=df['left'],
-        right=df['right'],
-    ))
+    return ColumnDataSource(data=df)
 
 
 def make_plot(source, title):
@@ -65,7 +54,7 @@ def update_plot(attrname, old, new):
     plot.title = cities[city]['title']
 
     src = get_dataset(df, cities[city]['airport'], distribution_select.value)
-    for key in ['record_min_temp', 'actual_min_temp', 'average_min_temp', 'average_max_temp', 'actual_max_temp', 'record_max_temp', 'left', 'right']:
+    for key in STATISTICS + ['left', 'right']:
         source.data[key] = src.data[key]
 
 # set up initial data
