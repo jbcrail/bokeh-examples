@@ -79,19 +79,23 @@ def cache(args):
                     sleep(random.randint(5, 10))
 
 def export(args):
-    stats = {}
     with sqlite3.connect(args.database) as conn:
-        c = conn.cursor()
-        for row in c.execute("SELECT airport, date, key, value FROM weather"):
-            key = (row[0], row[1])
-            if key not in stats:
-                stats[key] = {}
-            stats[key][row[2]] = row[3]
-    statistics = ['actual_max_temp', 'average_max_temp', 'record_max_temp', 'actual_min_temp', 'average_min_temp', 'record_min_temp']
-    writer = csv.writer(sys.stdout)
-    writer.writerow(['airport', 'date'] + statistics)
-    for key in stats.keys():
-        writer.writerow(list(key) + [stats[key][k] for k in statistics])
+        writer = csv.writer(sys.stdout)
+        sql = '''SELECT
+            airport, date,
+            MAX(CASE WHEN key='actual-max-temp'  THEN value END) actual_max_temp,
+            MAX(CASE WHEN key='average-max-temp' THEN value END) average_max_temp,
+            MAX(CASE WHEN key='record-max-temp'  THEN value END) record_max_temp,
+            MAX(CASE WHEN key='actual-min-temp'  THEN value END) actual_min_temp,
+            MAX(CASE WHEN key='average-min-temp' THEN value END) average_min_temp,
+            MAX(CASE WHEN key='record-min-temp'  THEN value END) record_min_temp
+            FROM weather
+            GROUP BY airport, date
+        '''
+        cursor = conn.execute(sql)
+        writer.writerow([d[0] for d in cursor.description])
+        for row in cursor.execute(sql):
+            writer.writerow(row)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='wunderground')
