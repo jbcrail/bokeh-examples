@@ -1,3 +1,4 @@
+from os.path import join, dirname
 import numpy as np
 import pandas as pd
 
@@ -56,7 +57,7 @@ def update_plot(attrname, old, new):
 
     src = get_dataset(df, cities[city]['airport'], distribution_select.value)
     for key in STATISTICS + ['left', 'right']:
-        source.data[key] = src.data[key]
+        source.data.update(src.data)
 
 # set up initial data
 city = 'Austin'
@@ -80,7 +81,7 @@ cities = {
 city_select = Select(value=city, title='City', options=sorted(cities.keys()))
 distribution_select = Select(value=distribution, title='Distribution', options=['Discrete', 'Smooth'])
 
-df = pd.read_csv('2015_weather.csv')
+df = pd.read_csv(join(dirname(__file__), 'data/2015_weather.csv'))
 source = get_dataset(df, cities[city]['airport'], distribution)
 plot = make_plot(source, cities[city]['title'])
 
