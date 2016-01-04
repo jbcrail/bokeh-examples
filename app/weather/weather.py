@@ -3,6 +3,7 @@ import pandas as pd
 
 from bokeh.io import curdoc
 from bokeh.models import ColumnDataSource, DataRange1d, Range1d, VBox, HBox, Select
+from bokeh.palettes import Blues4
 from bokeh.plotting import Figure
 from scipy.signal import savgol_filter
 
@@ -28,7 +29,7 @@ def get_dataset(src, name, distribution):
 def make_plot(source, title):
     plot = Figure(x_axis_type="datetime", plot_width=1000, tools="", toolbar_location=None)
     plot.title = title
-    colors = ["#6E4D5B", "#9A9180", "#C3BBA4"]
+    colors = Blues4[0:3]
 
     plot.quad(top='record_max_temp', bottom='record_min_temp', left='left', right='right', color=colors[2], source=source, legend="Record")
     plot.quad(top='average_max_temp', bottom='average_min_temp', left='left', right='right', color=colors[1], source=source, legend="Average")
