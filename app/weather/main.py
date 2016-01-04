@@ -56,8 +56,7 @@ def update_plot(attrname, old, new):
     plot.title = cities[city]['title']
 
     src = get_dataset(df, cities[city]['airport'], distribution_select.value)
-    for key in STATISTICS + ['left', 'right']:
-        source.data.update(src.data)
+    source.data.update(src.data)
 
 # set up initial data
 city = 'Austin'
