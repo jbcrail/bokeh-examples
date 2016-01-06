@@ -25,16 +25,19 @@ def get_temperatures(airport, date):
     temperatures = {}
     for row in table.find_all('tr'):
         weather_data = [span.text for span in row.find_all('span')]
-        if weather_data and "Max Temperature" in weather_data[0]:
-            data = [re.sub(r'[^\-0-9]+', '', data) for data in weather_data if data]
+        if not weather_data:
+            continue
+        data = [re.sub(r'[^\-0-9]+', '', data) for data in weather_data if data]
+        if "Max Temperature" in weather_data[0]:
             temperatures['actual_max_temp'] = int(data[2])
             temperatures['average_max_temp'] = int(data[5])
             temperatures['record_max_temp'] = int(data[8])
-        elif weather_data and "Min Temperature" in weather_data[0]:
-            data = [re.sub(r'[^\-0-9]+', '', data) for data in weather_data if data]
+        elif "Min Temperature" in weather_data[0]:
             temperatures['actual_min_temp'] = int(data[2])
             temperatures['average_min_temp'] = int(data[5])
             temperatures['record_min_temp'] = int(data[8])
+        elif "Precipitation" in weather_data[0]:
+            temperatures['actual_precipitation'] = int(data[2])
     return temperatures
 
 def get_valid_date_range(year, month, day):
@@ -58,7 +61,7 @@ def get_valid_date_range(year, month, day):
 def has_data(cursor, airport, date):
     cursor.execute("SELECT COUNT(*) FROM weather WHERE airport=? AND date=?", (airport, date))
     (number_of_rows,) = cursor.fetchone()
-    return number_of_rows == 6
+    return number_of_rows == 7
 
 def save_data(cursor, airport, date, key, value):
     cursor.execute("INSERT OR IGNORE INTO weather VALUES (?, ?, ?, ?)", (airport, date, key, value))
@@ -83,12 +86,13 @@ def export(args):
         writer = csv.writer(sys.stdout)
         sql = '''SELECT
             airport, date,
-            MAX(CASE WHEN key='actual_max_temp'  THEN value END) actual_max_temp,
-            MAX(CASE WHEN key='average_max_temp' THEN value END) average_max_temp,
-            MAX(CASE WHEN key='record_max_temp'  THEN value END) record_max_temp,
-            MAX(CASE WHEN key='actual_min_temp'  THEN value END) actual_min_temp,
-            MAX(CASE WHEN key='average_min_temp' THEN value END) average_min_temp,
-            MAX(CASE WHEN key='record_min_temp'  THEN value END) record_min_temp
+            MAX(CASE WHEN key='actual_max_temp'      THEN value END) actual_max_temp,
+            MAX(CASE WHEN key='average_max_temp'     THEN value END) average_max_temp,
+            MAX(CASE WHEN key='record_max_temp'      THEN value END) record_max_temp,
+            MAX(CASE WHEN key='actual_min_temp'      THEN value END) actual_min_temp,
+            MAX(CASE WHEN key='average_min_temp'     THEN value END) average_min_temp,
+            MAX(CASE WHEN key='record_min_temp'      THEN value END) record_min_temp,
+            MAX(CASE WHEN key='actual_precipitation' THEN value END) actual_precipitation
             FROM weather
             GROUP BY airport, date
         '''
