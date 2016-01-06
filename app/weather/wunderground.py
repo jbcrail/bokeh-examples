@@ -68,12 +68,13 @@ def cache(args):
         c = conn.cursor()
         c.execute("CREATE TABLE IF NOT EXISTS weather (airport text, date text, key text, value numeric, UNIQUE(airport, date, key) ON CONFLICT IGNORE)")
         for date in get_valid_date_range(args.year, args.month, args.day):
-            if not has_data(c, args.airport, date):
+            if args.force or not has_data(c, args.airport, date):
                 print "Retrieving weather for {0} on {1}".format(args.airport, date)
                 statistics = get_temperatures(args.airport, date)
                 for key, value in statistics.items():
                     save_data(c, args.airport, date, key, value)
-                conn.commit()
+                if not args.nop:
+                    conn.commit()
                 if not args.no_sleep:
                     sleep(random.randint(5, 10))
 
@@ -107,6 +108,8 @@ if __name__ == '__main__':
     cache_parser.add_argument('day', nargs='?', type=int)
     cache_parser.add_argument('-n', '--no-sleep', action='store_true', help='')
     cache_parser.add_argument('-d', '--database', metavar='DB', type=str, default='wunderground.db', help='SQLite database to store statistics')
+    cache_parser.add_argument('-f', '--force', action='store_true', help='force data to be cached')
+    cache_parser.add_argument('--nop', action='store_true', help='do not commit the cached data')
     cache_parser.set_defaults(func=cache)
 
     export_parser = subparsers.add_parser('export', help='export cached weather statistics to CSV')
