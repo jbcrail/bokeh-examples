@@ -27,7 +27,7 @@ def get_temperatures(airport, date):
         weather_data = [span.text for span in row.find_all('span')]
         if not weather_data:
             continue
-        data = [re.sub(r'[^\-0-9]+', '', data) for data in weather_data if data]
+        data = [re.sub(r'[^\-\.0-9]+', '', data) for data in weather_data if data]
         if "Max Temperature" in weather_data[0]:
             temperatures['actual_max_temp'] = int(data[2])
             temperatures['average_max_temp'] = int(data[5])
@@ -37,7 +37,7 @@ def get_temperatures(airport, date):
             temperatures['average_min_temp'] = int(data[5])
             temperatures['record_min_temp'] = int(data[8])
         elif "Precipitation" in weather_data[0]:
-            temperatures['actual_precipitation'] = int(data[2])
+            temperatures['actual_precipitation'] = 0.0 if not data[2] else int(float(data[2]) * 100)
     return temperatures
 
 def get_valid_date_range(year, month, day):
