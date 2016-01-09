@@ -75,6 +75,8 @@ def cache(args):
             if args.force or not has_data(c, args.airport, date):
                 print "Retrieving weather for {0} on {1}".format(args.airport, date)
                 statistics = get_temperatures(args.airport, date)
+                if args.verbose:
+                    print statistics
                 for key, value in statistics.items():
                     save_data(c, args.airport, date, key, value)
                 if not args.nop:
@@ -114,6 +116,7 @@ if __name__ == '__main__':
     cache_parser.add_argument('-n', '--no-sleep', action='store_true', help='')
     cache_parser.add_argument('-d', '--database', metavar='DB', type=str, default='wunderground.db', help='SQLite database to store statistics')
     cache_parser.add_argument('-f', '--force', action='store_true', help='force data to be cached')
+    cache_parser.add_argument('-v', '--verbose', action='store_true', help='verbose')
     cache_parser.add_argument('--nop', action='store_true', help='do not commit the cached data')
     cache_parser.set_defaults(func=cache)
 
