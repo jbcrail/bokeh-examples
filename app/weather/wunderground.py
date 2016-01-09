@@ -37,7 +37,8 @@ def get_temperatures(airport, date):
             temperatures['average_min_temp'] = int(data[5])
             temperatures['record_min_temp'] = int(data[8])
         elif "Precipitation" in weather_data[0]:
-            temperatures['actual_precipitation'] = 0.0 if not data[2] else int(float(data[2]) * 100)
+            # convert precipitation units in hundredths to integer
+            temperatures['actual_precipitation'] = 0 if not data[2] else int(float(data[2]) * 100)
     return temperatures
 
 def get_valid_date_range(year, month, day):
@@ -69,7 +70,7 @@ def save_data(cursor, airport, date, key, value):
 def cache(args):
     with sqlite3.connect(args.database) as conn:
         c = conn.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS weather (airport text, date text, key text, value numeric, UNIQUE(airport, date, key) ON CONFLICT IGNORE)")
+        c.execute("CREATE TABLE IF NOT EXISTS weather (airport text, date text, key text, value int, UNIQUE(airport, date, key) ON CONFLICT IGNORE)")
         for date in get_valid_date_range(args.year, args.month, args.day):
             if args.force or not has_data(c, args.airport, date):
                 print "Retrieving weather for {0} on {1}".format(args.airport, date)
